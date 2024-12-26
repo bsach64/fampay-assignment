@@ -11,5 +11,7 @@ CREATE TABLE videos (
 	fetched_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
+CREATE INDEX idx_videos_published_at_desc ON videos (published_at DESC);
+
 -- +goose Down
 DROP TABLE videos;
