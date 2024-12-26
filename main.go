@@ -41,6 +41,6 @@ func main() {
 		db:       database.New(db),
 	}
 
-	go backgroundQuery(stat, 10*time.Second)
-	select {}
+	go stat.backgroundQuery(10 * time.Second)
+	stat.server()
 }

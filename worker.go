@@ -10,14 +10,14 @@ import (
 	"github.com/bsach64/fampay-assignment/internal/database"
 )
 
-func backgroundQuery(s state, interval time.Duration) {
+func (s *state) backgroundQuery(interval time.Duration) {
 	ticker := time.NewTicker(interval)
 	defer ticker.Stop()
 
 	for {
 		select {
 		case <-ticker.C:
-			err := fetchAndWrite(s)
+			err := s.fetchAndWrite()
 			if err != nil {
 				log.Printf("could not query yt api: %v\n", err)
 			}
@@ -25,7 +25,7 @@ func backgroundQuery(s state, interval time.Duration) {
 	}
 }
 
-func fetchAndWrite(s state) error {
+func (s *state) fetchAndWrite() error {
 	start2024 := time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC)
 	Data, err := s.ytClient.PublishedVideosByDate("cricket", start2024)
 	if err != nil {
@@ -39,12 +39,13 @@ func fetchAndWrite(s state) error {
 		}
 
 		addVideoParams := database.AddVideoParams{
-			VideoID:     item.ID.VideoID,
-			Title:       item.Snippet.Title,
-			Description: sql.NullString{String: item.Snippet.Description, Valid: true},
-			PublishedAt: item.Snippet.PublishedAt,
-			ChannelID:   item.Snippet.ChannelID,
-			Thumbnails:  tb,
+			VideoID:      item.ID.VideoID,
+			Title:        item.Snippet.Title,
+			Description:  sql.NullString{String: item.Snippet.Description, Valid: true},
+			PublishedAt:  item.Snippet.PublishedAt,
+			ChannelID:    item.Snippet.ChannelID,
+			Thumbnails:   tb,
+			ChannelTitle: item.Snippet.ChannelTitle,
 		}
 		err = s.db.AddVideo(context.Background(), addVideoParams)
 		if err != nil {
