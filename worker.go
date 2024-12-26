@@ -26,8 +26,7 @@ func (s *state) backgroundQuery(interval time.Duration) {
 }
 
 func (s *state) fetchAndWrite() error {
-	start2024 := time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC)
-	Data, err := s.ytClient.PublishedVideosByDate("cricket", start2024)
+	Data, err := s.ytClient.PublishedVideosByDate("cricket")
 	if err != nil {
 		return err
 	}

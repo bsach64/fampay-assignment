@@ -10,7 +10,7 @@ import (
 )
 
 // Gets yt videos from Youtube API in reverse chronological order i.e newest first
-func (c *Client) PublishedVideosByDate(searchQuery string, PublishedAfter time.Time) (DataResponse, error) {
+func (c *Client) PublishedVideosByDate(searchQuery string) (DataResponse, error) {
 	baseURL := "https://www.googleapis.com/youtube/v3/search?part=snippet&order=date&type=video"
 
 	validKeyIdx := -1
@@ -24,8 +24,11 @@ func (c *Client) PublishedVideosByDate(searchQuery string, PublishedAfter time.T
 	if validKeyIdx == -1 {
 		return DataResponse{}, fmt.Errorf("all api keys have reached their quota")
 	}
-
-	fullURL := fmt.Sprintf("%v&q=%v&key=%v&publishedAfter=%v", baseURL, searchQuery, c.apiKeys[validKeyIdx].apiKey, PublishedAfter.Format(time.RFC3339))
+	// Last Api call had been made 10 seconds ago
+	// We want videos published in the mean time
+	// We set publishedAfter to be 10 seconds before current time to fetch only the latest videos
+	publishedAfter := time.Now().Add((-10)*time.Second).UTC().Format(time.RFC3339)
+	fullURL := fmt.Sprintf("%v&q=%v&key=%v&publishedAfter=%v", baseURL, searchQuery, c.apiKeys[validKeyIdx].apiKey, publishedAfter)
 
 	req, err := http.NewRequest("GET", fullURL, nil)
 	if err != nil {
@@ -56,9 +59,10 @@ func (c *Client) PublishedVideosByDate(searchQuery string, PublishedAfter time.T
 					log.Printf("quota exceeded! trying different key")
 				}
 				c.apiKeys[validKeyIdx].quotaReached = true
-				return c.PublishedVideosByDate(searchQuery, PublishedAfter)
+				return c.PublishedVideosByDate(searchQuery)
 			}
 		}
+		log.Println(errMsg)
 		return DataResponse{}, fmt.Errorf("bad status code %v", resp.StatusCode)
 	}
 
