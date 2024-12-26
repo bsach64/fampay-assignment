@@ -57,9 +57,9 @@ func (c *Client) PublishedVideosByDate(searchQuery string) (DataResponse, error)
 			for _, e := range errMsg.Error.Errors {
 				if e.Reason == "quotaExceeded" {
 					log.Printf("quota exceeded! trying different key")
+					c.apiKeys[validKeyIdx].quotaReached = true
+					return c.PublishedVideosByDate(searchQuery)
 				}
-				c.apiKeys[validKeyIdx].quotaReached = true
-				return c.PublishedVideosByDate(searchQuery)
 			}
 		}
 		log.Println(errMsg)
