@@ -62,4 +62,6 @@ The server responds with the latest videos in reverse chronological order.
 
 The server re-requests the youtube API with a different API key if quota has been reached on previous one.
 It also has a background worker which fetches new videos from YouTube every 10 seconds.
+We use `cricket` as our search query.
+`publishedAfter` is set to 10 seconds before what the current time is.
 
