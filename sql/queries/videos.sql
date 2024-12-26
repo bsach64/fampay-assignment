@@ -1,4 +1,4 @@
--- name: AddVideo :one
+-- name: AddVideo :exec
 INSERT INTO videos (
 	video_id, title, description, published_at, channel_id, channel_title, thumbnails
 ) VALUES (
@@ -10,5 +10,4 @@ INSERT INTO videos (
 	$6,
 	$7
 )
-ON CONFLICT (video_id) DO NOTHING
-RETURNING *;
+ON CONFLICT (video_id) DO NOTHING;

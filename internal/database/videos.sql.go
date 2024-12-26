@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-const addVideo = `-- name: AddVideo :one
+const addVideo = `-- name: AddVideo :exec
 INSERT INTO videos (
 	video_id, title, description, published_at, channel_id, channel_title, thumbnails
 ) VALUES (
@@ -25,7 +25,6 @@ INSERT INTO videos (
 	$7
 )
 ON CONFLICT (video_id) DO NOTHING
-RETURNING id, video_id, title, description, published_at, channel_id, channel_title, thumbnails, fetched_at
 `
 
 type AddVideoParams struct {
@@ -38,8 +37,8 @@ type AddVideoParams struct {
 	Thumbnails   json.RawMessage
 }
 
-func (q *Queries) AddVideo(ctx context.Context, arg AddVideoParams) (Video, error) {
-	row := q.db.QueryRowContext(ctx, addVideo,
+func (q *Queries) AddVideo(ctx context.Context, arg AddVideoParams) error {
+	_, err := q.db.ExecContext(ctx, addVideo,
 		arg.VideoID,
 		arg.Title,
 		arg.Description,
@@ -48,17 +47,5 @@ func (q *Queries) AddVideo(ctx context.Context, arg AddVideoParams) (Video, erro
 		arg.ChannelTitle,
 		arg.Thumbnails,
 	)
-	var i Video
-	err := row.Scan(
-		&i.ID,
-		&i.VideoID,
-		&i.Title,
-		&i.Description,
-		&i.PublishedAt,
-		&i.ChannelID,
-		&i.ChannelTitle,
-		&i.Thumbnails,
-		&i.FetchedAt,
-	)
-	return i, err
+	return err
 }
