@@ -13,6 +13,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type state struct {
+	ytClient ytapi.Client
+	db       *database.Queries
+}
+
 func main() {
 	err := godotenv.Load(".env")
 
@@ -31,12 +36,11 @@ func main() {
 		log.Fatalf("could not establish connection to db: %v\n", err)
 	}
 
-	_ = database.New(db)
+	stat := state{
+		ytClient: ytapi.NewClient(apiKeys),
+		db:       database.New(db),
+	}
 
-	ytClient := ytapi.NewClient(apiKeys)
-	start2024 := time.Date(2024, time.January, 1, 0, 0, 0, 0, time.UTC)
-
-	videoData, err := ytClient.PublishedVideosByDate("cricket", start2024)
-
-	log.Println(videoData.Items)
+	go backgroundQuery(stat, 10*time.Second)
+	select {}
 }
