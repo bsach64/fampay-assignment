@@ -11,3 +11,8 @@ INSERT INTO videos (
 	$7
 )
 ON CONFLICT (video_id) DO NOTHING;
+
+-- name: GetVideos :many
+SELECT
+	video_id, title, description, published_at, channel_id, channel_title, thumbnails
+FROM videos ORDER BY published_at DESC OFFSET $1 LIMIT $2;
